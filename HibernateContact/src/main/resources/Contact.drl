@@ -7,19 +7,20 @@ import java.util.Collection;
 rule "FormatCodePostal"
 	salience 2
     when
-        $contact : Contact(codePostal contains " " || codePostal contains "-")
+        $contact : Contact(codePostal contains " " || codePostal contains "-" || codePostal matches ".*[a-z].*")
     then
     	System.out.println("FormatCodePostal");
        	insert(DroolsMessage.warning().message("Format de code postal corrigé.").field("codePostal").rule(kcontext));
        	$contact.setCodePostal($contact.getCodePostal().replaceAll("\\s",""));
        	$contact.setCodePostal($contact.getCodePostal().replaceAll("-",""));
+       	$contact.setCodePostal($contact.getCodePostal().toUpperCase());
    		update($contact)
 end
 
 rule "CodePostal"
 	salience 1
     when
-        $contact : Contact(codePostal not matches "^[ABCEGHJKLMNPRSTVXY]{1}\\d{1}[A-Z]{1} *\\d{1}[A-Z]{1}\\d{1}$")
+        $contact : Contact(codePostal.toUpperCase() not matches "^[ABCEGHJKLMNPRSTVXY]{1}\\d{1}[A-Z]{1} *\\d{1}[A-Z]{1}\\d{1}$")
     then
     	System.out.println("CodePostal");
        	insert(DroolsMessage.error().message("Mauvais code postal.").rule(kcontext).field("codePostal"));
